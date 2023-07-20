@@ -1,0 +1,390 @@
+---
+project: deblur_gan
+experiment_desc: busi_swin
+
+train:
+#  files_a: &FILES_A /datasets/my_dataset/**/*.jpg
+  #可以使用绝对路径
+  # files_a: &FILES_A D:/deblur/goprol_large/**/*.png
+  # files_b: *FILES_A
+  # files_a: &FILES_A /content/drive/MyDrive/THESIS_ULTRASOUND_SR_SHARED_DRIVE/Image-Super-Resolution-via-Iterative-Refinement/dataset/ccapngdata/fakesr/*.png
+  # files_b: &FILES_B /content/drive/MyDrive/THESIS_ULTRASOUND_SR_SHARED_DRIVE/Image-Super-Resolution-via-Iterative-Refinement/dataset/ccapngdata/HR/x4/*.png
+  files_a: /home/karaaliozan/dataset/BUSI/train/Bic/x4/*.png
+  files_b: /home/karaaliozan/dataset/BUSI/train/HR/x4/*.png
+  size: &SIZE 256
+  crop: random
+  preload: &PRELOAD false
+  preload_size: &PRELOAD_SIZE 0
+  bounds: [0, 1]
+  scope: geometric
+  corrupt:
+    # - name: cutout
+    #   prob: 0.5
+    #   num_holes: 3
+    #   max_h_size: 25
+    #   max_w_size: 25
+    # - name: jpeg
+    #   quality_lower: 70
+    #   quality_upper: 90
+    # - name: motion_blur
+    # - name: median_blur
+    # - name: gamma
+    # - name: rgb_shift
+    # - name: hsv_shift
+    # - name: sharpen
+
+val:
+  #files_a: *FILES_A
+  #files_b: *FILES_A
+  # files_a: /content/drive/MyDrive/THESIS_ULTRASOUND_SR_SHARED_DRIVE/Image-Super-Resolution-via-Iterative-Refinement/dataset/us-images-test/fakesr/*.png
+  # files_b: /content/drive/MyDrive/THESIS_ULTRASOUND_SR_SHARED_DRIVE/Image-Super-Resolution-via-Iterative-Refinement/dataset/us-images-test/HR/*.png
+  files_a: /home/karaaliozan/dataset/BUSI/val/Bic/x4/*.png
+  files_b: /home/karaaliozan/dataset/BUSI/val/HR/x4/*.png
+  size: *SIZE
+  scope: geometric
+  crop: center
+  preload: *PRELOAD
+  preload_size: *PRELOAD_SIZE
+  bounds: [0, 1]
+  corrupt:
+
+phase: train
+warmup_num: -1
+model:
+  g_name: fpn_swin
+  blocks: 9
+  d_name: double_gan # may be no_gan, patch_gan, double_gan, multi_scale
+  d_layers: 3
+  content_loss: perceptual
+  adv_lambda: 0.001
+  disc_loss: ragan-ls
+  learn_residual: True
+  norm_layer: instance
+  dropout: True
+
+num_epochs: 100
+train_batches_per_epoch: 1000
+val_batches_per_epoch: 100
+batch_size: 8
+image_size: [256, 256]
+
+optimizer:
+  name: adam
+  lr: 0.0001
+scheduler:
+  name: linear
+  start_epoch: 70
+  min_lr: 0.0000001
+
+
+#  root@34bfa69091c0db06270147445a940614-taskrole-0:/home/karaaliozan/DeblurGANv2# python train.py --config_path=config/BUSI_Swin.yaml 
+# W0321 19:35:31.052881 19251 __init__.py:933] Duplicate key in file '/etc/matplotlibrc' line #622.
+# I0321 19:35:32.132007 19251 dataset.py:28] Subsampling buckets from 0 to 100, total buckets number is 100
+# I0321 19:35:32.132240 19251 dataset.py:71] Dataset has been created with 100 samples
+# I0321 19:35:32.132591 19251 dataset.py:28] Subsampling buckets from 0 to 100, total buckets number is 100
+# I0321 19:35:32.132652 19251 dataset.py:71] Dataset has been created with 10 samples
+# Downloading: "https://download.pytorch.org/models/swin_v2_b-781e5279.pth" to /root/.cache/torch/hub/checkpoints/swin_v2_b-781e5279.pth
+# 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 336M/336M [00:04<00:00, 85.0MB/s]
+# Epoch 0, lr 0.0001:   0%|                                                                                                                               | 0/1000 [00:00<?, ?it/s]W0321 19:35:40.799448 19251 warnings.py:109] /usr/local/lib/python3.8/dist-packages/torch/nn/functional.py:3737: UserWarning: nn.functional.upsample is deprecated. Use nn.functional.interpolate instead.
+#   warnings.warn("nn.functional.upsample is deprecated. Use nn.functional.interpolate instead.")
+
+# Epoch 0, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:08<11:51,  1.39it/s, loss=G_loss=0.1611; PSNR=17.0997; SSIM=0.2710]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:38,  2.56it/s]
+# G_loss=0.1177; PSNR=18.0379; SSIM=0.3297
+# Epoch 1, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:06,  1.63it/s, loss=G_loss=0.1049; PSNR=19.2859; SSIM=0.3782]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:29,  3.37it/s]
+# G_loss=0.0825; PSNR=20.3828; SSIM=0.5031
+# Epoch 2, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:08<11:10,  1.47it/s, loss=G_loss=0.0760; PSNR=22.2811; SSIM=0.4672]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:39,  2.53it/s]
+# G_loss=0.0661; PSNR=22.4195; SSIM=0.5014
+# Epoch 3, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:48,  1.52it/s, loss=G_loss=0.0595; PSNR=23.5817; SSIM=0.5697]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:39,  2.54it/s]
+# G_loss=0.0529; PSNR=26.6561; SSIM=0.4925
+# Epoch 4, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:57,  1.50it/s, loss=G_loss=0.0502; PSNR=24.6062; SSIM=0.5886]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:38,  2.54it/s]
+# G_loss=0.0447; PSNR=27.4560; SSIM=0.5534
+# Epoch 5, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:42,  1.54it/s, loss=G_loss=0.0444; PSNR=25.2686; SSIM=0.6501]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:29,  3.39it/s]
+# G_loss=0.0365; PSNR=26.1464; SSIM=0.7063
+# Epoch 6, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:36,  1.55it/s, loss=G_loss=0.0397; PSNR=26.2426; SSIM=0.6581]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:38,  2.55it/s]
+# G_loss=0.0316; PSNR=26.3013; SSIM=0.7561
+# Epoch 7, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:41,  1.54it/s, loss=G_loss=0.0373; PSNR=27.3665; SSIM=0.6959]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:28,  3.41it/s]
+# G_loss=0.0325; PSNR=26.7350; SSIM=0.6946
+# Epoch 8, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:43,  1.54it/s, loss=G_loss=0.0330; PSNR=28.2869; SSIM=0.7341]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:58,  1.68it/s]
+# G_loss=0.0278; PSNR=28.6684; SSIM=0.7326
+# Epoch 9, lr 0.0001:   1%|▊                                                                      | 12/1000 [00:07<10:25,  1.58it/s, loss=G_loss=0.0366; PSNR=27.6831; SSIM=0.7177]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:38,  2.56it/s]
+# G_loss=0.0330; PSNR=29.7900; SSIM=0.6964
+# Epoch 10, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:07<10:19,  1.60it/s, loss=G_loss=0.0323; PSNR=29.0693; SSIM=0.7251]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:58,  1.70it/s]
+# G_loss=0.0248; PSNR=30.6275; SSIM=0.8116
+# Epoch 11, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:07<10:40,  1.54it/s, loss=G_loss=0.0307; PSNR=28.9931; SSIM=0.7636]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:39,  2.52it/s]
+# G_loss=0.0244; PSNR=30.5619; SSIM=0.7683
+# Epoch 12, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:07<10:54,  1.51it/s, loss=G_loss=0.0312; PSNR=29.2474; SSIM=0.7686]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:28,  3.42it/s]
+# G_loss=0.0229; PSNR=30.4744; SSIM=0.8019
+# Epoch 13, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:08<11:19,  1.45it/s, loss=G_loss=0.0292; PSNR=30.7245; SSIM=0.7771]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:58,  1.68it/s]
+# G_loss=0.0252; PSNR=32.7499; SSIM=0.7916
+# Epoch 14, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:04,  1.04s/it, loss=G_loss=0.0308; PSNR=29.2459; SSIM=0.7788]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:59,  1.67it/s]
+# G_loss=0.0219; PSNR=31.1108; SSIM=0.8111
+# Epoch 15, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<15:49,  1.04it/s, loss=G_loss=0.0300; PSNR=29.9857; SSIM=0.7810]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:41,  2.40it/s]
+# G_loss=0.0249; PSNR=28.6296; SSIM=0.7595
+# Epoch 16, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<16:00,  1.03it/s, loss=G_loss=0.0267; PSNR=31.3738; SSIM=0.7997]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:49,  2.02it/s]
+# G_loss=0.0243; PSNR=33.3013; SSIM=0.8107
+# Epoch 17, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<16:20,  1.01it/s, loss=G_loss=0.0277; PSNR=29.6310; SSIM=0.7855]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:49,  2.01it/s]
+# G_loss=0.0239; PSNR=29.5410; SSIM=0.8296
+# Epoch 18, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<16:25,  1.00it/s, loss=G_loss=0.0267; PSNR=31.0167; SSIM=0.8078]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:21,  1.21it/s]
+# G_loss=0.0208; PSNR=32.3234; SSIM=0.8491
+# Epoch 19, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<16:42,  1.01s/it, loss=G_loss=0.0259; PSNR=31.6743; SSIM=0.8084]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:51,  1.92it/s]
+# G_loss=0.0216; PSNR=31.9338; SSIM=0.7959
+# Epoch 20, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:36,  1.07s/it, loss=G_loss=0.0280; PSNR=30.1355; SSIM=0.7997]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:59,  1.66it/s]
+# G_loss=0.0259; PSNR=31.4685; SSIM=0.8374
+# Epoch 21, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<15:27,  1.07it/s, loss=G_loss=0.0276; PSNR=30.7872; SSIM=0.8100]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:59,  1.66it/s]
+# G_loss=0.0193; PSNR=32.0051; SSIM=0.8282
+# Epoch 22, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:18,  1.05s/it, loss=G_loss=0.0265; PSNR=30.8628; SSIM=0.8119]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:01,  1.61it/s]
+# G_loss=0.0231; PSNR=28.9485; SSIM=0.7740
+# Epoch 23, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<15:41,  1.05it/s, loss=G_loss=0.0260; PSNR=30.6301; SSIM=0.8091]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:08,  1.45it/s]
+# G_loss=0.0217; PSNR=29.6679; SSIM=0.8317
+# Epoch 24, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<16:51,  1.02s/it, loss=G_loss=0.0255; PSNR=30.9662; SSIM=0.8212]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:49,  2.01it/s]
+# G_loss=0.0230; PSNR=29.0054; SSIM=0.7745
+# Epoch 25, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<16:37,  1.01s/it, loss=G_loss=0.0255; PSNR=31.4462; SSIM=0.8203]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:49,  1.99it/s]
+# G_loss=0.0230; PSNR=29.0832; SSIM=0.7796
+# Epoch 26, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:06,  1.04s/it, loss=G_loss=0.0249; PSNR=30.9536; SSIM=0.8110]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:53,  1.86it/s]
+# G_loss=0.0223; PSNR=29.0570; SSIM=0.7781
+# Epoch 27, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:22,  1.06s/it, loss=G_loss=0.0232; PSNR=32.1023; SSIM=0.8284]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:02,  1.58it/s]
+# G_loss=0.0216; PSNR=29.8411; SSIM=0.8335
+# Epoch 28, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<16:39,  1.01s/it, loss=G_loss=0.0279; PSNR=31.0645; SSIM=0.8220]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:48,  2.06it/s]
+# G_loss=0.0181; PSNR=32.4782; SSIM=0.8362
+# Epoch 29, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<16:02,  1.03it/s, loss=G_loss=0.0269; PSNR=31.1411; SSIM=0.8184]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:05,  1.52it/s]
+# G_loss=0.0270; PSNR=33.5537; SSIM=0.8138
+# Epoch 30, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:15,  1.05s/it, loss=G_loss=0.0256; PSNR=31.5487; SSIM=0.8238]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:52,  1.90it/s]
+# G_loss=0.0194; PSNR=31.8001; SSIM=0.8516
+# Epoch 31, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<16:34,  1.01s/it, loss=G_loss=0.0261; PSNR=31.0713; SSIM=0.8233]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:50,  1.98it/s]
+# G_loss=0.0182; PSNR=32.0834; SSIM=0.8377
+# Epoch 32, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<16:17,  1.01it/s, loss=G_loss=0.0240; PSNR=31.7377; SSIM=0.8175]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:15,  1.32it/s]
+# G_loss=0.0222; PSNR=34.3296; SSIM=0.8402
+# Epoch 33, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<16:25,  1.00it/s, loss=G_loss=0.0246; PSNR=31.5085; SSIM=0.8219]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:03,  1.57it/s]
+# G_loss=0.0204; PSNR=31.2867; SSIM=0.8220
+# Epoch 34, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<15:50,  1.04it/s, loss=G_loss=0.0283; PSNR=29.5321; SSIM=0.8025]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:50,  1.95it/s]
+# G_loss=0.0190; PSNR=32.6844; SSIM=0.8172
+# Epoch 35, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:23,  1.06s/it, loss=G_loss=0.0235; PSNR=32.8504; SSIM=0.8400]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:50,  1.95it/s]
+# G_loss=0.0216; PSNR=33.7880; SSIM=0.8256
+# Epoch 36, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:11<15:52,  1.04it/s, loss=G_loss=0.0243; PSNR=31.7631; SSIM=0.8241]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:50,  1.98it/s]
+# G_loss=0.0207; PSNR=33.8990; SSIM=0.8367
+# Epoch 37, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<17:39,  1.07s/it, loss=G_loss=0.0251; PSNR=31.9823; SSIM=0.8378]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:48,  2.05it/s]
+# G_loss=0.0200; PSNR=34.5662; SSIM=0.8456
+# Epoch 38, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:13<18:02,  1.10s/it, loss=G_loss=0.0284; PSNR=30.5047; SSIM=0.8153]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:51,  1.92it/s]
+# G_loss=0.0194; PSNR=32.3293; SSIM=0.8596
+# Epoch 39, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:12<16:51,  1.02s/it, loss=G_loss=0.0260; PSNR=30.7659; SSIM=0.8092]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:53,  1.86it/s]
+# G_loss=0.0182; PSNR=32.9414; SSIM=0.8458
+# Epoch 40, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:13<17:55,  1.09s/it, loss=G_loss=0.0236; PSNR=32.4846; SSIM=0.8400]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:32,  3.08it/s]
+# G_loss=0.0201; PSNR=32.0452; SSIM=0.8268
+# Epoch 41, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<26:00,  1.58s/it, loss=G_loss=0.0237; PSNR=31.5754; SSIM=0.8274]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:11,  1.38it/s]
+# G_loss=0.0184; PSNR=34.0153; SSIM=0.8427
+# Epoch 42, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<23:57,  1.45s/it, loss=G_loss=0.0244; PSNR=31.5378; SSIM=0.8326]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:07,  1.46it/s]
+# G_loss=0.0250; PSNR=34.2163; SSIM=0.8375
+# Epoch 43, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<24:44,  1.50s/it, loss=G_loss=0.0248; PSNR=32.1599; SSIM=0.8282]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:03,  1.55it/s]
+# G_loss=0.0177; PSNR=32.5617; SSIM=0.8637
+# Epoch 44, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<23:31,  1.43s/it, loss=G_loss=0.0244; PSNR=30.8496; SSIM=0.8242]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:17,  1.28it/s]
+# G_loss=0.0189; PSNR=32.4995; SSIM=0.8631
+# Epoch 45, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:01,  1.46s/it, loss=G_loss=0.0260; PSNR=30.3068; SSIM=0.8197]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:16,  1.29it/s]
+# G_loss=0.0202; PSNR=34.2939; SSIM=0.8401
+# Epoch 46, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:00,  1.46s/it, loss=G_loss=0.0229; PSNR=33.2379; SSIM=0.8517]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:27,  1.13it/s]
+# G_loss=0.0203; PSNR=34.3094; SSIM=0.8557
+# Epoch 47, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<24:56,  1.51s/it, loss=G_loss=0.0240; PSNR=32.3688; SSIM=0.8454]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:17,  1.28it/s]
+# G_loss=0.0237; PSNR=34.2386; SSIM=0.8554
+# Epoch 48, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:15<21:44,  1.32s/it, loss=G_loss=0.0260; PSNR=31.1803; SSIM=0.8243]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:22,  1.20it/s]
+# G_loss=0.0216; PSNR=32.3367; SSIM=0.8573
+# Epoch 49, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:43,  1.56s/it, loss=G_loss=0.0237; PSNR=32.2860; SSIM=0.8399]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:14,  1.32it/s]
+# G_loss=0.0249; PSNR=29.3001; SSIM=0.7958
+# Epoch 50, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:34,  1.55s/it, loss=G_loss=0.0241; PSNR=31.3479; SSIM=0.8327]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:09,  1.42it/s]
+# G_loss=0.0189; PSNR=34.2297; SSIM=0.8555
+# Epoch 51, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:38,  1.50s/it, loss=G_loss=0.0253; PSNR=31.2318; SSIM=0.8305]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:03,  1.55it/s]
+# G_loss=0.0232; PSNR=34.1776; SSIM=0.8565
+# Epoch 52, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:44,  1.56s/it, loss=G_loss=0.0222; PSNR=32.3291; SSIM=0.8378]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:27,  1.13it/s]
+# G_loss=0.0189; PSNR=32.9950; SSIM=0.8275
+# Epoch 53, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<24:58,  1.52s/it, loss=G_loss=0.0238; PSNR=31.7752; SSIM=0.8296]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:16,  1.30it/s]
+# G_loss=0.0197; PSNR=29.4909; SSIM=0.7987
+# Epoch 54, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:24,  1.54s/it, loss=G_loss=0.0217; PSNR=33.4002; SSIM=0.8482]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:53,  1.86it/s]
+# G_loss=0.0190; PSNR=31.5207; SSIM=0.8058
+# Epoch 55, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<24:51,  1.51s/it, loss=G_loss=0.0243; PSNR=31.1534; SSIM=0.8360]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:52,  1.90it/s]
+# G_loss=0.0219; PSNR=30.3890; SSIM=0.8527
+# Epoch 56, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:33,  1.49s/it, loss=G_loss=0.0224; PSNR=33.6650; SSIM=0.8528]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:01,  1.61it/s]
+# G_loss=0.0175; PSNR=32.5741; SSIM=0.8522
+# Epoch 57, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<24:51,  1.51s/it, loss=G_loss=0.0220; PSNR=33.6105; SSIM=0.8447]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:09,  1.42it/s]
+# G_loss=0.0167; PSNR=33.2038; SSIM=0.8505
+# Epoch 58, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<26:03,  1.58s/it, loss=G_loss=0.0250; PSNR=30.5511; SSIM=0.8286]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:13,  1.35it/s]
+# G_loss=0.0200; PSNR=29.4323; SSIM=0.7956
+# Epoch 59, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:19<26:16,  1.60s/it, loss=G_loss=0.0241; PSNR=31.3683; SSIM=0.8405]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:08,  1.44it/s]
+# G_loss=0.0166; PSNR=33.2630; SSIM=0.8519
+# Epoch 60, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:36,  1.49s/it, loss=G_loss=0.0217; PSNR=32.5883; SSIM=0.8467]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:42,  2.31it/s]
+# G_loss=0.0168; PSNR=33.3005; SSIM=0.8703
+# Epoch 61, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:03,  1.52s/it, loss=G_loss=0.0248; PSNR=31.6014; SSIM=0.8398]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:12,  1.36it/s]
+# G_loss=0.0201; PSNR=33.1859; SSIM=0.8352
+# Epoch 62, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:08,  1.53s/it, loss=G_loss=0.0230; PSNR=31.5650; SSIM=0.8293]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:21,  1.22it/s]
+# G_loss=0.0187; PSNR=30.4216; SSIM=0.7953
+# Epoch 63, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:18,  1.54s/it, loss=G_loss=0.0230; PSNR=32.8230; SSIM=0.8358]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:21,  1.21it/s]
+# G_loss=0.0184; PSNR=32.1780; SSIM=0.8579
+# Epoch 64, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:18,  1.54s/it, loss=G_loss=0.0223; PSNR=31.6853; SSIM=0.8356]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:12,  1.36it/s]
+# G_loss=0.0205; PSNR=30.2521; SSIM=0.8527
+# Epoch 65, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:31,  1.49s/it, loss=G_loss=0.0204; PSNR=32.4916; SSIM=0.8419]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:26,  1.15it/s]
+# G_loss=0.0182; PSNR=29.5321; SSIM=0.8023
+# Epoch 66, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:33,  1.55s/it, loss=G_loss=0.0194; PSNR=34.2488; SSIM=0.8602]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:05,  1.52it/s]
+# G_loss=0.0167; PSNR=31.5211; SSIM=0.8061
+# Epoch 67, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:21,  1.54s/it, loss=G_loss=0.0212; PSNR=31.8506; SSIM=0.8354]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:25,  1.15it/s]
+# G_loss=0.0152; PSNR=33.1182; SSIM=0.8708
+# Epoch 68, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:17<24:31,  1.49s/it, loss=G_loss=0.0226; PSNR=30.9635; SSIM=0.8295]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:19,  1.25it/s]
+# G_loss=0.0149; PSNR=33.1914; SSIM=0.8571
+# Epoch 69, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:33,  1.55s/it, loss=G_loss=0.0245; PSNR=31.0282; SSIM=0.8447]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:57,  1.71it/s]
+# G_loss=0.0196; PSNR=34.8257; SSIM=0.8552
+# Epoch 70, lr 0.0001:   1%|▊                                                                     | 12/1000 [00:18<25:45,  1.56s/it, loss=G_loss=0.0221; PSNR=31.1453; SSIM=0.8355]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:56,  1.75it/s]
+# G_loss=0.0174; PSNR=32.5615; SSIM=0.8533
+# Epoch 71, lr 9.900100000000001e-05:   1%|▋                                                      | 12/1000 [00:19<26:07,  1.59s/it, loss=G_loss=0.0230; PSNR=31.3087; SSIM=0.8445]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:15,  1.31it/s]
+# G_loss=0.0191; PSNR=29.4888; SSIM=0.7997
+# Epoch 72, lr 9.8002e-05:   1%|▊                                                                 | 12/1000 [00:17<24:18,  1.48s/it, loss=G_loss=0.0229; PSNR=32.0003; SSIM=0.8492]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:20,  1.22it/s]
+# G_loss=0.0171; PSNR=32.6337; SSIM=0.8665
+# Epoch 73, lr 9.7003e-05:   1%|▊                                                                 | 12/1000 [00:18<25:46,  1.56s/it, loss=G_loss=0.0227; PSNR=31.6762; SSIM=0.8450]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:19,  1.25it/s]
+# G_loss=0.0170; PSNR=31.7150; SSIM=0.8352
+# Epoch 74, lr 9.600400000000001e-05:   1%|▋                                                      | 12/1000 [00:17<24:16,  1.47s/it, loss=G_loss=0.0233; PSNR=30.9446; SSIM=0.8235]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:29,  1.11it/s]
+# G_loss=0.0173; PSNR=33.0826; SSIM=0.8296
+# Epoch 75, lr 9.5005e-05:   1%|▊                                                                 | 12/1000 [00:18<24:57,  1.52s/it, loss=G_loss=0.0240; PSNR=30.7174; SSIM=0.8304]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:01<01:40,  1.02s/it]
+# G_loss=0.0190; PSNR=30.5105; SSIM=0.8289
+# Epoch 76, lr 9.400600000000001e-05:   1%|▋                                                      | 12/1000 [00:19<26:35,  1.61s/it, loss=G_loss=0.0234; PSNR=31.6326; SSIM=0.8339]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:24,  1.17it/s]
+# G_loss=0.0201; PSNR=34.6347; SSIM=0.8514
+# Epoch 77, lr 9.3007e-05:   1%|▊                                                                 | 12/1000 [00:12<17:44,  1.08s/it, loss=G_loss=0.0220; PSNR=32.7618; SSIM=0.8542]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:57,  1.73it/s]
+# G_loss=0.0200; PSNR=34.7858; SSIM=0.8592
+# Epoch 78, lr 9.2008e-05:   1%|▊                                                                 | 12/1000 [00:12<16:53,  1.03s/it, loss=G_loss=0.0220; PSNR=31.6640; SSIM=0.8442]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:10,  1.40it/s]
+# G_loss=0.0172; PSNR=33.8596; SSIM=0.8748
+# Epoch 79, lr 9.100900000000001e-05:   1%|▋                                                      | 12/1000 [00:12<17:35,  1.07s/it, loss=G_loss=0.0238; PSNR=30.9653; SSIM=0.8408]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:51,  1.92it/s]
+# G_loss=0.0172; PSNR=33.2575; SSIM=0.8351
+# Epoch 80, lr 9.001e-05:   1%|▊                                                                  | 12/1000 [00:11<16:14,  1.01it/s, loss=G_loss=0.0232; PSNR=31.2626; SSIM=0.8414]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:59,  1.67it/s]
+# G_loss=0.0161; PSNR=33.3024; SSIM=0.8576
+# Epoch 81, lr 8.9011e-05:   1%|▊                                                                 | 12/1000 [00:12<16:52,  1.02s/it, loss=G_loss=0.0212; PSNR=31.6184; SSIM=0.8358]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:39,  2.53it/s]
+# G_loss=0.0179; PSNR=33.0650; SSIM=0.8764
+# Epoch 82, lr 8.8012e-05:   1%|▊                                                                 | 12/1000 [00:12<17:07,  1.04s/it, loss=G_loss=0.0253; PSNR=30.5750; SSIM=0.8311]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:53,  1.85it/s]
+# G_loss=0.0189; PSNR=31.9065; SSIM=0.8366
+# Epoch 83, lr 8.7013e-05:   1%|▊                                                                 | 12/1000 [00:12<17:38,  1.07s/it, loss=G_loss=0.0219; PSNR=31.8982; SSIM=0.8360]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:30,  3.24it/s]
+# G_loss=0.0215; PSNR=30.5240; SSIM=0.8593
+# Epoch 84, lr 8.601400000000001e-05:   1%|▋                                                      | 12/1000 [00:12<17:26,  1.06s/it, loss=G_loss=0.0206; PSNR=32.7424; SSIM=0.8447]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:50,  1.96it/s]
+# G_loss=0.0199; PSNR=30.2127; SSIM=0.8296
+# Epoch 85, lr 8.5015e-05:   1%|▊                                                                 | 12/1000 [00:12<16:35,  1.01s/it, loss=G_loss=0.0237; PSNR=31.3459; SSIM=0.8375]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:49,  2.00it/s]
+# G_loss=0.0184; PSNR=30.5805; SSIM=0.8554
+# Epoch 86, lr 8.4016e-05:   1%|▊                                                                 | 12/1000 [00:12<17:48,  1.08s/it, loss=G_loss=0.0207; PSNR=32.6390; SSIM=0.8484]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:40,  2.42it/s]
+# G_loss=0.0165; PSNR=32.7936; SSIM=0.8322
+# Epoch 87, lr 8.301700000000001e-05:   1%|▋                                                      | 12/1000 [00:11<16:20,  1.01it/s, loss=G_loss=0.0234; PSNR=31.8334; SSIM=0.8321]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:51,  1.92it/s]
+# G_loss=0.0191; PSNR=30.2435; SSIM=0.8282
+# Epoch 88, lr 8.2018e-05:   1%|▊                                                                 | 12/1000 [00:12<17:12,  1.05s/it, loss=G_loss=0.0220; PSNR=32.5117; SSIM=0.8454]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:28,  3.51it/s]
+# G_loss=0.0154; PSNR=33.7159; SSIM=0.8740
+# Epoch 89, lr 8.1019e-05:   1%|▊                                                                 | 12/1000 [00:13<18:06,  1.10s/it, loss=G_loss=0.0222; PSNR=31.0327; SSIM=0.8246]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:10,  1.41it/s]
+# G_loss=0.0200; PSNR=35.0063; SSIM=0.8628
+# Epoch 90, lr 8.002000000000001e-05:   1%|▋                                                      | 12/1000 [00:12<17:46,  1.08s/it, loss=G_loss=0.0216; PSNR=32.2406; SSIM=0.8411]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:52,  1.88it/s]
+# G_loss=0.0157; PSNR=33.3451; SSIM=0.8771
+# Epoch 91, lr 7.9021e-05:   1%|▊                                                                 | 12/1000 [00:12<16:59,  1.03s/it, loss=G_loss=0.0221; PSNR=31.9899; SSIM=0.8459]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:45,  2.18it/s]
+# G_loss=0.0163; PSNR=33.0483; SSIM=0.8765
+# Epoch 92, lr 7.8022e-05:   1%|▊                                                                 | 12/1000 [00:12<16:29,  1.00s/it, loss=G_loss=0.0222; PSNR=32.4566; SSIM=0.8483]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:31,  3.13it/s]
+# G_loss=0.0186; PSNR=31.1619; SSIM=0.8142
+# Epoch 93, lr 7.702300000000001e-05:   1%|▋                                                      | 12/1000 [00:12<17:10,  1.04s/it, loss=G_loss=0.0221; PSNR=32.1946; SSIM=0.8532]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:47,  2.08it/s]
+# G_loss=0.0164; PSNR=31.9655; SSIM=0.8385
+# Epoch 94, lr 7.6024e-05:   1%|▊                                                                 | 12/1000 [00:11<16:05,  1.02it/s, loss=G_loss=0.0218; PSNR=31.1119; SSIM=0.8270]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:58,  1.69it/s]
+# G_loss=0.0160; PSNR=32.6519; SSIM=0.8529
+# Epoch 95, lr 7.5025e-05:   1%|▊                                                                 | 12/1000 [00:12<17:32,  1.07s/it, loss=G_loss=0.0198; PSNR=33.2676; SSIM=0.8555]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:49,  1.99it/s]
+# G_loss=0.0200; PSNR=33.3594; SSIM=0.8440
+# Epoch 96, lr 7.4026e-05:   1%|▊                                                                 | 12/1000 [00:12<16:37,  1.01s/it, loss=G_loss=0.0220; PSNR=31.2032; SSIM=0.8411]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:53,  1.84it/s]
+# G_loss=0.0168; PSNR=32.8742; SSIM=0.8610
+# Epoch 97, lr 7.3027e-05:   1%|▊                                                                 | 12/1000 [00:11<16:16,  1.01it/s, loss=G_loss=0.0207; PSNR=32.1287; SSIM=0.8395]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:50,  1.95it/s]
+# G_loss=0.0181; PSNR=32.8264; SSIM=0.8852
+# Epoch 98, lr 7.2028e-05:   1%|▊                                                                 | 12/1000 [00:12<16:28,  1.00s/it, loss=G_loss=0.0218; PSNR=30.9830; SSIM=0.8405]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<01:09,  1.43it/s]
+# G_loss=0.0183; PSNR=33.0551; SSIM=0.8348
+# Epoch 99, lr 7.1029e-05:   1%|▊                                                                 | 12/1000 [00:13<18:02,  1.10s/it, loss=G_loss=0.0220; PSNR=31.8984; SSIM=0.8458]
+# Validation:   1%|█▎                                                                                                                              | 1/100 [00:00<00:55,  1.80it/s]
+# G_loss=0.0159; PSNR=33.2945; SSIM=0.8758 

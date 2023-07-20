@@ -1,0 +1,89 @@
+name: NAF_SRx4_CCABlur2000
+model_type: ImageRestorationModel
+scale: 1
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+datasets:
+  test_1:  # the 1st test dataset
+    name: CCA-test
+    type: PairedImageDataset
+    dataroot_gt: /home/karaaliozan/dataset/CCA/test/HR/x4
+    dataroot_lq: /home/karaaliozan/dataset/CCA/test/Bic/x4
+    io_backend:
+      type: disk
+
+  test_2:  # the 2nd test dataset
+    name: CCABlur-test
+    type: PairedImageDataset
+    dataroot_gt: /home/karaaliozan/dataset/CCA/test/HRBlur/x4
+    dataroot_lq: /home/karaaliozan/dataset/CCA/test/LRBlurBic/x4
+    io_backend:
+      type: disk
+
+  test_3:  # the 1st test dataset
+    name: BUSI-test
+    type: PairedImageDataset
+    dataroot_gt: /home/karaaliozan/dataset/BUSI/test/HR/x4
+    dataroot_lq: /home/karaaliozan/dataset/BUSI/test/Bic/x4
+    io_backend:
+      type: disk
+
+  test_4:  # the 2nd test dataset
+    name: BUSIBlur-test
+    type: PairedImageDataset
+    dataroot_gt: /home/karaaliozan/dataset/BUSI/test/HRBlur/x4
+    dataroot_lq: /home/karaaliozan/dataset/BUSI/test/LRBlurBic/x4
+    io_backend:
+      type: disk
+
+  test_5:  # the 1st test dataset
+    name: CCANoise-test
+    type: PairedImageDataset
+    dataroot_gt: /home/karaaliozan/dataset/CCA/test/HRBlurNoise/x4
+    dataroot_lq: /home/karaaliozan/dataset/CCA/test/LRBlurNoiseBic/x4
+    io_backend:
+      type: disk
+
+  test_6:  # the 2nd test dataset
+    name: BUSINoise-test
+    type: PairedImageDataset
+    dataroot_gt: /home/karaaliozan/dataset/BUSI/test/HRBlurNoise/x4
+    dataroot_lq: /home/karaaliozan/dataset/BUSI/test/LRBlurNoiseBic/x4
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: NAFNetLocal
+  width: 64
+  enc_blk_nums: [1, 1, 1, 28]
+  middle_blk_num: 1
+  dec_blk_nums: [1, 1, 1, 1]
+
+# path
+path:
+  pretrain_network_g: /home/karaaliozan/NAFNet/experiments/NAFNet-CCABlur-width64/models/net_g_2000.pth
+  strict_load_g: true
+  resume_state: ~
+
+# validation settings
+val:
+  save_img: true
+  grids: false
+
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: false
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
